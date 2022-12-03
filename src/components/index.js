@@ -54,7 +54,9 @@ export const Link = styled.a.attrs({
   margin-top: 8px;
 `;
 
-export const TextField = styled.textarea``;
+export const TextField = styled.textarea`
+  cols: 20;
+  rows: 1`;
 export const Text = styled.text``;
 
 export const FooterLink = styled.a`

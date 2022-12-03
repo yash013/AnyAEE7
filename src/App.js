@@ -143,9 +143,6 @@ function WalletConnectEIP4337SmartWallet() {
 
       console.log("library", library);
 
-
-
-
       // Auto-Approve Session
       connector.approveSession({
         accounts: ["0x4a2F2a0d936c0532175E8cc3E04467AD49dc706A"],
@@ -170,6 +167,12 @@ function WalletConnectEIP4337SmartWallet() {
           value: txInfo.value,
           data: txInfo.data
         });
+
+        return {
+          "id": 1,
+          "jsonrpc": "2.0",
+          "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+        };
       }
     });
 
@@ -268,8 +271,8 @@ function WalletConnectEIP4337SmartWallet() {
             id='cheese-status'
             defaultChecked={isGasLess}
             onChange={toggleIsGasLess} />
-
         </div>
+        <br></br>
         <div>
           <label>
             Smart Wallet Address
@@ -282,6 +285,7 @@ function WalletConnectEIP4337SmartWallet() {
               onChange={(e) => setSmartWalletAddress(e.target.value)}
             />
           </div>
+          <br></br>
           <div>
             <label>
               Wallet Connect URI
@@ -311,6 +315,14 @@ function WalletConnectEIP4337SmartWallet() {
   else {
     return (
       <>
+        <div>
+          <label htmlFor='cheese-status'>GasLess Mode</label>
+          <Toggle
+            id='cheese-status'
+            defaultChecked={isGasLess}
+            onChange={toggleIsGasLess} />
+        </div>
+        <br></br>
         <Text size="lg">Bridge: {connector.bridge}</Text>
         <Text size="lg">Dapp name: {peerData?.name}</Text>
         <Text size="lg">Dapp url: {peerData?.url}</Text>
