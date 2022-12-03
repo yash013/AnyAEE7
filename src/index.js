@@ -1,6 +1,6 @@
 import "./index.css";
 
-import { DAppProvider, Goerli, Mainnet, Polygon } from "@usedapp/core";
+import { DAppProvider, Goerli, Mainnet, Polygon, Mumbai } from "@usedapp/core";
 import React from "react";
 import ReactDOM from "react-dom";
 
@@ -16,6 +16,7 @@ const config = {
     [Mainnet.chainId]: "https://mainnet.infura.io/v3/" + INFURA_PROJECT_ID,
     [Goerli.chainId]: "https://goerli.infura.io/v3/" + INFURA_PROJECT_ID,
     [Polygon.chainId]: "https://polygon-mainnet.infura.io/v3/" + INFURA_PROJECT_ID,
+    [Mumbai.chainId]: "https://polygon-mumbai.infura.io/v3/" + INFURA_PROJECT_ID,
   },
 };
 

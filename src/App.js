@@ -1,5 +1,5 @@
 import { Contract } from "@ethersproject/contracts";
-import { shortenAddress, useCall, useEthers, useLookupAddress, useSendTransaction, useContractFunction } from "@usedapp/core";
+import { shortenAddress, useEthers, useLookupAddress, useContractFunction } from "@usedapp/core";
 import React, { useEffect, useState } from "react";
 import EIP4337SmartWalletABI from "./EIP4337SmartWalletABI.json";
 
@@ -59,15 +59,21 @@ function WalletConnectEIP4337SmartWallet() {
   const EIP4337SmartWalletInterface = new ethers.utils.Interface(EIP4337SmartWalletABI);
 
   const smartWalletContract = new Contract("0x4a2F2a0d936c0532175E8cc3E04467AD49dc706A", EIP4337SmartWalletInterface);
-  const { send } = useContractFunction(smartWalletContract, 'exec', { transactionName: 'Exec' });
+
 
   const [smartWalletAddress, setSmartWalletAddress] = useState(undefined);
-  // const [smartWallet, setSmartWallet] = useState(undefined);
+  // const [smartWalletContract, setSmartWalletContract] = useState(new Contract("0x4a2F2a0d936c0532175E8cc3E04467AD49dc706A", EIP4337SmartWalletInterface));
+  const [martWalletSendFunction, setSmartWalletSendFunction] = useState(undefined);
+  const [smartWallet, setSmartWallet] = useState(null);
   const [connector, setConnector] = useState(undefined);
   const [peerData, setPeerData] = useState(null);
   const [wcUri, setWcUri] = useState('');
+  const [isGasLess, setIsGasLess] = useState(false);
   const { account, chainId, library } = useEthers();
-  const { sendTransaction, state } = useSendTransaction();
+  const [tx, setTx] = useState({ "to": null });
+
+  const { send } = useContractFunction(smartWalletContract, 'exec', { transactionName: 'Exec' });
+
 
   useEffect(() => {
     const listener = (event) => {
@@ -135,17 +141,6 @@ function WalletConnectEIP4337SmartWallet() {
       console.log("library", library);
 
 
-      // const smartWallet1 = new SmartAccount(library, {
-      //   activeNetworkId: chainId,
-      //   supportedNetworksIds: [chainId],
-      //   networkConfig: [{
-      //     chainId: 5,
-      //     dappAPIKey: 'gUv-7Xh-M.aa270a76-a1aa-4e79-bab5-8d857161c561',
-      //   }]
-      // });
-
-      // await smartWallet1.init();
-      // setSmartWallet(smartWallet1);
 
 
       // Auto-Approve Session
@@ -158,7 +153,7 @@ function WalletConnectEIP4337SmartWallet() {
     });
 
     // Subscribe to call requests
-    connector.on("call_request", (error, payload) => {
+    connector.on("call_request", async (error, payload) => {
       console.log({ payload });
       if (error) {
         throw error;
@@ -166,25 +161,13 @@ function WalletConnectEIP4337SmartWallet() {
 
       if (payload.method === "eth_sendTransaction") {
         const txInfo = payload.params[0];
-        console.log(txInfo);
-
-
-
-        send(txInfo.to, txInfo.value || "0x0", txInfo.data || "0x");
-
-        // sendTransaction({
-        //   to: txInfo.to,
-        //   value: txInfo.value || "0x0",
-        //   data: txInfo.data || "0x"
-        // });
+        console.log("txInfo", txInfo);
+        setTx({
+          to: txInfo.to,
+          value: txInfo.value,
+          data: txInfo.data
+        });
       }
-
-      if (payload.method === "eth_call") {
-        console.log(payload);
-      }
-
-
-
     });
 
     connector.on("disconnect", (error, payload) => {
@@ -206,14 +189,96 @@ function WalletConnectEIP4337SmartWallet() {
     if (uri) wcConnect(uri);
   }, [wcConnect]);
 
-  useEffect(() => {
 
-  }, [smartWalletAddress]);
+
+
+  useEffect(() => {
+    const smartWallet1 = new SmartAccount(library, {
+      activeNetworkId: chainId,
+      supportedNetworksIds: [chainId],
+      networkConfig: [{
+        chainId: chainId,
+        dappAPIKey: chainId === 5 ? 'gUv-7Xh-M.aa270a76-a1aa-4e79-bab5-8d857161c561' : '59fRCMXvk.8a1652f0-b522-4ea7-b296-98628499aee3'//mumbai,
+      }]
+    });
+    smartWallet1.init().then(
+      res => { console.log(res); }
+    ).catch(error => {
+      console.log(error);
+    });
+    setSmartWallet(smartWallet1);
+  }, [chainId, library]);
+
+  const toggleIsGasLess = () => setIsGasLess(!isGasLess);
+
+  useEffect(() => {
+    async function handleTx() {
+      if (tx.to !== null) {
+        if (isGasLess) {
+          console.log("in gasless mode");
+          const tx1 = {
+            to: tx.to,
+            data: tx.data,
+            value: tx.value
+          };
+
+          smartWallet.on('txHashGenerated', (response) => {
+            console.log('txHashGenerated event received via emitter', response);
+          });
+
+          smartWallet.on('txMined', (response) => {
+            console.log('txMined event received via emitter', response);
+          });
+
+          smartWallet.on('error', (response) => {
+            console.log('error event received via emitter', response);
+          });
+
+          const feeQuotes = await smartWallet.prepareRefundTransaction(
+            { transaction: tx1 }
+          );
+
+          console.log("feeQuotes", feeQuotes);
+
+          const transaction = await smartWallet.createRefundTransaction({
+            transaction: tx1,
+            feeQuote: feeQuotes[0],
+          });
+
+          console.log("transaction", transaction);
+
+          // transaction.targetTxGas = transaction.targetTxGas * 10;
+          const gasLimit = 10000000;
+
+
+          const txId = await smartWallet.sendTransaction({
+            tx: transaction, // temp
+            gasLimit: gasLimit,
+          });
+
+        } else {
+          send(tx.to, tx.value || "0x0", tx.data || "0x");
+        }
+        setTx({ "to": null });
+
+      }
+    }
+    handleTx();
+  }, [tx, isGasLess, send, smartWallet]);
+
 
 
   if (connector === undefined) {
     return (
       <>
+        <div>
+          {/* Render the current state of the toggle */}
+
+
+          {/* Provide a way to toggle the state */}
+          <Button onClick={toggleIsGasLess}>GasLess mode</Button>
+          {isGasLess ? "On" : "Off"}
+        </div>
         <div>
           <label>
             Smart Wallet Address
@@ -272,8 +337,6 @@ function WalletConnectEIP4337SmartWallet() {
 };
 
 function App() {
-
-
 
   return (
     <Container>
