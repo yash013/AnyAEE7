@@ -9,3 +9,15 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
+
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+
+.header-title {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: right;
+}

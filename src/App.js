@@ -4,6 +4,8 @@ import React, { useEffect, useState } from "react";
 import EIP4337SmartWalletABI from "./EIP4337SmartWalletABI.json";
 import Toggle from 'react-toggle';
 import "react-toggle/style.css";
+import "./index.css";
+import Footer from "./Footer";
 
 
 
@@ -39,8 +41,6 @@ function WalletButton() {
       console.error("Error while connecting wallet:", error.message);
     }
   }, [error]);
-
-
 
   return (
     <Button
@@ -224,6 +224,7 @@ function WalletConnectEIP4337SmartWallet() {
             data: tx.data,
             value: tx.value
           };
+          console.log(tx1);
 
           smartWallet.on('txHashGenerated', (response) => {
             console.log('txHashGenerated event received via emitter', response);
@@ -237,26 +238,13 @@ function WalletConnectEIP4337SmartWallet() {
             console.log('error event received via emitter', response);
           });
 
-          const feeQuotes = await smartWallet.prepareRefundTransaction(
-            { transaction: tx1 }
-          );
-
-          console.log("feeQuotes", feeQuotes);
-
-          const transaction = await smartWallet.createRefundTransaction({
-            transaction: tx1,
-            feeQuote: feeQuotes[0],
-          });
-
-          console.log("transaction", transaction);
-
           // transaction.targetTxGas = transaction.targetTxGas * 10;
-          const gasLimit = 6207500;
+          // const gasLimit = 6207500;
 
 
-          const txId = await smartWallet.sendTransaction({
-            tx: transaction, // temp
-            gasLimit: gasLimit,
+          const txId = await smartWallet.sendGasLessTransaction({
+            transaction: tx1,
+            // gasLimit: gasLimit,
           });
 
         } else {
@@ -343,15 +331,15 @@ function App() {
 
   return (
     <Container>
-      <Header>
+      <Header className="header-title">
+        <h1 className="header-title">AnyAEE7</h1>
         <WalletButton />
       </Header>
       <Body>
         < WalletConnectEIP4337SmartWallet />
       </Body>
+      <Footer />
     </Container>
-
-
   );
 }
 

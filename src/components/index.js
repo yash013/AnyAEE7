@@ -56,3 +56,16 @@ export const Link = styled.a.attrs({
 
 export const TextField = styled.textarea``;
 export const Text = styled.text``;
+
+export const FooterLink = styled.a`
+  color: #fff;
+  margin-bottom: 20px;
+  font-size: 18px;
+  text-decoration: none;
+   
+  &:hover {
+      color: green;
+      transition: 200ms ease-in;
+  }
+`;
+
