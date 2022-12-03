@@ -2,6 +2,9 @@ import { Contract } from "@ethersproject/contracts";
 import { shortenAddress, useEthers, useLookupAddress, useContractFunction } from "@usedapp/core";
 import React, { useEffect, useState } from "react";
 import EIP4337SmartWalletABI from "./EIP4337SmartWalletABI.json";
+import Toggle from 'react-toggle';
+import "react-toggle/style.css";
+
 
 
 import { Body, Button, Container, Header, Image, Link, TextField, Text } from "./components";
@@ -248,7 +251,7 @@ function WalletConnectEIP4337SmartWallet() {
           console.log("transaction", transaction);
 
           // transaction.targetTxGas = transaction.targetTxGas * 10;
-          const gasLimit = 10000000;
+          const gasLimit = 6207500;
 
 
           const txId = await smartWallet.sendTransaction({
@@ -272,12 +275,12 @@ function WalletConnectEIP4337SmartWallet() {
     return (
       <>
         <div>
-          {/* Render the current state of the toggle */}
+          <label htmlFor='cheese-status'>GasLess Mode</label>
+          <Toggle
+            id='cheese-status'
+            defaultChecked={isGasLess}
+            onChange={toggleIsGasLess} />
 
-
-          {/* Provide a way to toggle the state */}
-          <Button onClick={toggleIsGasLess}>GasLess mode</Button>
-          {isGasLess ? "On" : "Off"}
         </div>
         <div>
           <label>
@@ -346,7 +349,6 @@ function App() {
       <Body>
         < WalletConnectEIP4337SmartWallet />
       </Body>
-
     </Container>
 
 
